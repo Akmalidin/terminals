@@ -1,0 +1,87 @@
+{% extends 'include/base.html' %}
+{% load static %}
+{% block content %}
+<body class="terminals_leaderboard_body terminal_detail_leaderboard_body">
+  <h1 class="terminal_detail__title">Терминал в регионе {{ terminal.region.name }}</h1>
+  <section class="terminal_detail">
+    <article class="terminals_leaderboard terminals_detail_leaderboard">
+      <header>
+        <img src="{% static 'img/atm.svg' %}" alt="ATM Icon" class="terminals_leaderboard__icon">
+        <h1 class="terminals_leaderboard__title">
+          <span class="terminals_leaderboard__title--top">Терминал</span>
+          <span class="terminals_leaderboard__title--bottom">{{ terminal.address }}</span>
+        </h1>
+      </header>
+      <main class="terminals_leaderboard__profiles">
+        <article class="terminals_detail_leaderboard__profile">
+          <table class="terminal_detail_leaderboard__table table">
+            <thead>
+              <tr>
+                <th>Фото</th>
+                <th>Название терминала</th>
+                <th>Адрес терминала</th>
+                <th>Последняя инкассация</th>
+                <th>Следующая инкассация</th>
+                <th>Действия</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="align-middle">
+                  <img src="{% if terminal.photo %}{{ terminal.photo.url }}{% else %}{% static 'img/question.jpg' %}{% endif %}" 
+                       alt="Фото терминала" class="terminals_leaderboard__picture">
+                </td>
+                <td class="terminals_leaderboard__name align-middle">{{ terminal.name }}</td>
+                <td class="terminals_leaderboard__value align-middle">{{ terminal.address }}</td>
+                <td class="terminals_leaderboard__value align-middle">
+                  {% if last_incassation %}
+            {{ last_incassation.last_collected|date:"d.m.Y" }}
+        {% else %}
+            Нет данных
+        {% endif %}
+                </td>
+                <td class="terminals_leaderboard__value align-middle">
+                  {% if last_incassation and last_incassation.next_collection %}
+            {{ last_incassation.next_collection|date:"d.m.Y" }}
+        {% else %}
+            Не назначено
+        {% endif %}
+                </td>
+                <td class="terminals_leaderboard__value align-middle">
+                  <form method="post" action="{% url 'collect_cash' terminal.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">Собрать</button>
+                  </form>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+      </main>
+    </article>
+    <div id="map"></div>
+    <script>
+      function initMap() {
+          const address = "{{ terminal.address }}";
+          const geocoder = new google.maps.Geocoder();
+          geocoder.geocode({ 'address': address }, function(results, status) {
+              if (status === 'OK') {
+                  const map = new google.maps.Map(document.getElementById('map'), {
+                      zoom: 15,
+                      center: results[0].geometry.location
+                  });
+                  new google.maps.Marker({
+                      position: results[0].geometry.location,
+                      map: map
+                  });
+              } else {
+                  alert('Не удалось найти адрес: ' + status);
+              }
+          });
+      }
+    </script>
+  </section>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+</body>
+{% endblock %}

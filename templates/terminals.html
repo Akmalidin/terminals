@@ -1,0 +1,122 @@
+{% extends 'include/base.html' %}
+{% load static %}
+
+{% block content %}
+<body class="terminals_leaderboard_body">
+  <h1 class="terminal_detail__title">Список терминалов в {{ region.name }}</h1>
+
+  <article class="terminals_leaderboard">
+    <header>
+      <img src="{% static 'img/atm.svg' %}" alt="ATM Icon" class="terminals_leaderboard__icon">
+      <h1 class="terminals_leaderboard__title">
+        <span class="terminals_leaderboard__title--top">Терминалы</span>
+        <span class="terminals_leaderboard__title--bottom">Район {{ region.name }}</span>
+      </h1>
+    </header>
+    
+    <main class="terminals_leaderboard__profiles">
+      <article class="terminals_detail_leaderboard__profile">
+        <table class="terminal_detail_leaderboard__table table">
+          <thead>
+            <tr>
+              <th>Фото</th>
+              <th>Название терминала</th>
+              <th>Адрес терминала</th>
+              <th>Последняя инкассация</th>
+              <th>Следующая инкассация</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for terminal in terminals %}
+            <tr class="terminals_table_leaderboard__profile">
+              <td class="align-middle">
+                <img src="{% if terminal.photo %}{{ terminal.photo.url }}{% else %}{% static 'img/question.jpg' %}{% endif %}" 
+                     alt="{{ terminal.name }}" class="terminals_leaderboard__picture">
+              </td>
+              <td class="terminals_leaderboard__name align-middle">
+                <a href="{% url 'terminal_detail' terminal.id %}" class="terminals_leaderboard__name">{{ terminal.name }}</a>
+              </td>
+              <td class="terminals_leaderboard__value align-middle">
+                {{ terminal.address }}
+              </td>
+              <td class="terminals_leaderboard__value align-middle">
+                {% if terminal.last_collected %}
+                  {{ terminal.last_collected|date:"d.m.Y" }}
+                {% else %}
+                  Неизвестно
+                {% endif %}
+              </td>
+              <td class="terminals_leaderboard__value align-middle">
+                <p class="d-flex align-items-center flex-column">
+                  {% if terminal.next_collection %}
+                  {{ terminal.next_collection|date:"d.m.Y" }}
+                {% else %}
+                  Не назначено
+                {% endif %}
+                </p>
+              </td>
+              <td class="terminals_leaderboard__value align-middle">
+                <form method="post" action="{%  url 'collect_cash' terminal_id=terminal.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-success" style="z-index: 100; !important">Собрать</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </article>
+    </main>
+  </article> <br><br>
+  <div id="map" style="height: 300px; width: 80%;"></div>
+  <script>
+    function initMap() {
+        var lat = "{{ coordinates.0|floatformat:6|default:"0" }}";
+        var lng = "{{ coordinates.1|floatformat:6|default:"0" }}";
+
+        var center = {
+            lat: parseFloat(lat),
+            lng: parseFloat(lng)
+        };
+
+        var map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 10,
+            center: center
+        });
+
+        // Создаем массив адресов для геокодирования
+        var addresses = [
+            {% for terminal in terminals %}
+                "{{ terminal.address|escapejs }}"{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        var geocoder = new google.maps.Geocoder();
+
+        addresses.forEach(function(address, index) {
+            var fullAddress = address + ', {{ region.name }}, Кыргызстан';
+            geocoder.geocode({'address': fullAddress}, function(results, status) {
+                if (status === 'OK') {
+                    var position = results[0].geometry.location;
+
+                    var marker = new google.maps.Marker({
+                        position: position,
+                        map: map,
+                        animation: google.maps.Animation.DROP,
+                        label: {
+                            text: (index + 1).toString(),
+                            color: 'white',
+                            fontSize: '16px',
+                            fontWeight: 'bold'
+                        }
+                    });
+                } else {
+                    console.error('Geocode was not successful for the following reason: ' + status);
+                }
+            });
+        });
+    }
+  </script>
+</body>
+{% endblock %}
