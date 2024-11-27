@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-zq^udy)@)!zqw^7lmx-*g(opu-%&ywj!%&hc5l7ic9!imhbolu
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -53,7 +53,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 ROOT_URLCONF = 'terminals.urls'
 
 TEMPLATES = [
@@ -122,7 +122,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
-
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = [BASE_DIR / 'media']
 # Default primary key field type
@@ -138,3 +138,9 @@ PWA_APP_START_URL = "/"
 PWA_APP_DISPLAY = "standalone"
 PWA_APP_ICON = "static/img/atm.svg"
 PWA_APP_OFFLINE_PAGE = "offline.html"  # Страница для оффлайн-режима
+
+import dj_database_url
+
+DATABASES = {
+    'default': dj_database_url.config(default='sqlite:///db.sqlite3')
+}
