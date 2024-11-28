@@ -53,9 +53,7 @@
     row-gap: 8px;
   }
   .leaderboard__profile {
-    display: grid;
-    grid-template-columns: 1fr 3fr 1fr;
-    align-items: center;
+    
     padding: 10px 30px 10px 10px;
     overflow: hidden;
     border-radius: 10px;
@@ -63,6 +61,11 @@
     cursor: pointer;
     transition: transform 0.25s cubic-bezier(0.7, 0.98, 0.86, 0.98), box-shadow 0.25s cubic-bezier(0.7, 0.98, 0.86, 0.98);
     background-color: #fff;
+  }
+  .leaderboard__picture-container {
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    align-items: center;
   }
   .leaderboard__profile:hover {
     transform: scale(1.2);
@@ -74,12 +77,13 @@
     border-radius: 50%;
     box-shadow: 0 0 0 10px #ebeef3, 0 0 0 22px #f3f4f6;
   }
-  .leaderboard__name a{
-    color: #979cb0;
+  .leaderboard__name{
+    color: #979cb0 !important;
     font-weight: 600;
     font-size: 20px;
     letter-spacing: 0.64px;
     margin-left: 12px;
+    text-decoration: underline !important;
   }
   .leaderboard__value {
     color: #35d8ac;
@@ -105,3 +109,68 @@
     box-shadow: 0 0 40px -10px rgba(0, 0, 0, 0.4);
   }
   
+  /* Стили для верхнего блока с уведомлением */
+.notification-banner {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  padding: 10px 20px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  z-index: 1000;
+}
+
+.notification-count {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+/* Стили для панели с подробностями */
+.notification-details {
+  display: none;
+  position: fixed;
+  top: 60px;
+  right: 10px;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: 300px;
+  border-radius: 5px;
+  z-index: 1000;
+}
+
+.notification-details h2 {
+  margin-top: 0;
+}
+
+.notification-details ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.notification-details ul li {
+  margin-bottom: 10px;
+}
+
+.close-notifications {
+  margin-top: 20px;
+  padding: 5px 10px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.close-notifications:hover {
+  background-color: #c0392b;
+}
+.exclamation {
+  color: #e74c3c;
+  font-weight: 700;
+}
+.no-notifications {
+  color: #35d8ac;
+  font-weight: 500;
+}

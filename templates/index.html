@@ -1,47 +1,103 @@
 {% extends 'include/base.html' %}
-{% load static %}
+{% load static custom_filters %}
 
 {% block content %}
 <body class="index_body">
   {% if messages %}
-<div class="notifications">
-  {% for message in messages %}
-  <div class="alert alert-info">
-    {{ message }}
-  </div>
-  {% endfor %}
-</div>
-{% endif %}
-
-<article class="leaderboard__profiles">
-  {% for region in regions %}
-  <article class="leaderboard__profile">
-      <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="{{ region.name }}" class="leaderboard__picture">
-      <span class="leaderboard__name">
-        <a href="{% url 'terminals' region.slug %}">{{ region.name }}</a>
-      </span>
-      <span class="leaderboard__value">{{ region.terminals.count }}<span> терминалов</span></span>
-  </article>
-  {% endfor %}
-</article>
-<article class="leaderboard">
-  <header>
-
-    <img src="{% static 'img/atm.svg' %}" alt="Forbes" class="leaderboard__icon">
-
-    <h1 class="leaderboard__title"><span class="leaderboard__title--top">Районы</span><span class="leaderboard__title--bottom">Город ОШ</span></h1>
-  </header>
+    <div class="notifications">
+      {% for message in messages %}
+        <div class="alert alert-info">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
   
-  <main class="leaderboard__profiles">
-    {% for region in regions %}
-    <article class="leaderboard__profile">
-        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Mark Zuckerberg" class="leaderboard__picture">
-        <span class="leaderboard__name"><a href="{% url 'terminals' region.slug %}">{{ region.name }}</a></span>
-        <span class="leaderboard__value">{{ region.terminals.count }}<span> терминалов</span></span>
-    </article>
-{% endfor %}
-  </main>
-<article/>
+  <!-- Верхний блок с уведомлением -->
+  <div id="notification-banner" class="notification-banner">
+    <button id="notification-button" class="notification-button btn btn-primary">
+      <i class="fa-solid fa-bell"></i>
+      {% if total_terminals_to_collect > 0 %}
+        <span id="notification-count" class="notification-count">{{ total_terminals_to_collect }}</span>
+      {% else %}
+        <span id="notification-count" class="notification-count" style="display:none;"></span>
+      {% endif %}
+    </button>
+  </div>
 
+  <!-- Панель с подробностями об инкассации -->
+  <div id="notification-details" class="notification-details">
+    <h2>Терминалы, требующие инкассации:</h2>
+    <ul>
+      {% for region in regions %}
+        {% with region_notifications|get_item:region.id as terminals_to_collect %}
+          {% if terminals_to_collect > 0 %}
+            <li>
+              <strong>{{ region.name }}:</strong> 
+              {{ terminals_to_collect }} терминалов
+            </li>
+          {% endif %}
+        {% endwith %}
+      {% endfor %}
+    </ul>
+    <button id="close-notifications" class="close-notifications">Закрыть</button>
+  </div>
+
+  <article class="leaderboard">
+    <header>
+      <img src="{% static 'img/atm.svg' %}" alt="Forbes" class="leaderboard__icon">
+      <h1 class="leaderboard__title">
+        <span class="leaderboard__title--top">Районы</span>
+        <span class="leaderboard__title--bottom">Город ОШ</span>
+      </h1>
+    </header>
+    
+    <main class="leaderboard__profiles">
+      {% for region in regions %}
+      {% with region_notifications|get_item:region.id as terminals_to_collect %}
+      <article class="leaderboard__profile" title="Требуется инкассация: {{ terminals_to_collect }} терминалов.">
+        <a href="{% url 'terminals' region.slug %}" style="text-decoration: none;">
+          <div class="leaderboard__picture-container">
+            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="{{ region.name }}" class="leaderboard__picture">
+            <span class="leaderboard__name">{{ region.name }}</span>
+            <span class="leaderboard__value">{{ region.terminals.count }} <span>терминалов</span></span>
+          </div>
+        </a>
+      
+        {% if terminals_to_collect > 0 %}
+          <div class="region-notifications">
+            <span class="exclamation">Требуется инкассация: {{ terminals_to_collect }} терминалов.</span>
+            <span class="notification-details" style="display:none;">
+              Требуется инкассация: {{ terminals_to_collect }} терминалов.
+            </span>
+          </div>
+        {% else %}
+          <div class="region-notifications">
+            <span class="no-notifications">Нет инкассаций на сегодня</span>
+          </div>
+        {% endif %}
+      </article>
+      
+        {% endwith %}
+      {% endfor %}
+    </main>
+  </article>
+  
+  <script>
+    // Получаем элементы на странице
+    const notificationButton = document.getElementById('notification-button');
+    const notificationDetails = document.getElementById('notification-details');
+    const closeButton = document.getElementById('close-notifications');
+    
+    // При клике на кнопку уведомлений показываем или скрываем подробности
+    notificationButton.addEventListener('click', function() {
+      notificationDetails.style.display = notificationDetails.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // При клике на кнопку закрытия скрываем уведомления
+    closeButton.addEventListener('click', function() {
+      notificationDetails.style.display = 'none';
+    });
+  </script>
 </body>
 {% endblock %}

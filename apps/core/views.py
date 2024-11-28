@@ -4,10 +4,29 @@ from django.utils import timezone
 from django.utils.timezone import now
 import requests
 from django.contrib import messages
+from datetime import date
+from django.urls import reverse
 
 def index(request):
-    regions = Region.objects.prefetch_related('terminals').all()
-    return render(request, 'index.html', {'regions': regions})
+    today = date.today()
+    
+    regions = Region.objects.all()
+    
+    # Создаём словарь с регионами и количеством терминалов, которым требуется инкассация
+    region_notifications = {}
+    for region in regions:
+        # Фильтруем терминалы по дате следующей инкассации
+        terminals_to_collect = region.terminals.filter(incassations__next_collection=today)
+        region_notifications[region.id] = terminals_to_collect.count()
+
+    # Считаем общее количество терминалов, которым требуется инкассация
+    total_terminals_to_collect = sum(region_notifications.values())
+
+    return render(request, 'index.html', {
+        'regions': regions,
+        'region_notifications': region_notifications,
+        'total_terminals_to_collect': total_terminals_to_collect
+    })
 
 # GOOGLE MAPS FUNCTION FOR REGIONS
 def get_coordinates(region_name):
@@ -91,20 +110,3 @@ def collect_cash(request, terminal_id):
     return redirect('terminal_detail', pk=terminal_id)
 
 
-
-def region_list_view(request):
-    regions = Region.objects.all()
-
-    # Получаем текущую дату
-    current_date = now().date()
-
-    # Проверяем каждый терминал на необходимость инкассации
-    for region in regions:
-        for terminal in region.terminals.all():
-            last_incassation = terminal.incassations.last()
-            
-            # Если инкассация есть и она должна быть выполнена сегодня
-            if last_incassation and last_incassation.next_collection == current_date:
-                messages.info(request, f"Терминал {terminal.name} в регионе {region.name} требует инкассации сегодня.")
-
-    return render(request, 'index.html', {'regions': regions})
