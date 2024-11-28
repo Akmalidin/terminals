@@ -3,6 +3,27 @@
 
 {% block content %}
 <body class="index_body">
+  {% if messages %}
+<div class="notifications">
+  {% for message in messages %}
+  <div class="alert alert-info">
+    {{ message }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<article class="leaderboard__profiles">
+  {% for region in regions %}
+  <article class="leaderboard__profile">
+      <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="{{ region.name }}" class="leaderboard__picture">
+      <span class="leaderboard__name">
+        <a href="{% url 'terminals' region.slug %}">{{ region.name }}</a>
+      </span>
+      <span class="leaderboard__value">{{ region.terminals.count }}<span> терминалов</span></span>
+  </article>
+  {% endfor %}
+</article>
 <article class="leaderboard">
   <header>
 

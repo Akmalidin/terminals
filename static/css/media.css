@@ -1,0 +1,107 @@
+/* Базовые стили для мобильных устройств */
+@media screen and (max-width: 868px) {
+  .terminal_detail {
+    padding: 0 !important;
+  }
+    body.terminals_leaderboard_body {
+      flex-direction: column;
+      padding: 20px 20px 0 20px;
+    }
+    .terminal_detail_leaderboard__table .table {
+      overflow: scroll !important;
+    }
+  
+    .terminals_leaderboard {
+      max-width: 100%;
+      width: 100%;
+      box-shadow: none;
+      padding: 10px;
+    }
+  
+    .terminals_leaderboard header {
+      height: auto;
+      padding: 10px;
+      text-align: center;
+    }
+  
+    .terminals_leaderboard header .terminals_leaderboard__title {
+      top: auto;
+      right: auto;
+      position: relative;
+      transform: none;
+      margin: 10px 0;
+    }
+    .terminals_leaderboard__name {
+      font-size: 14px !important;
+
+    }
+    .terminals_leaderboard header .terminals_leaderboard__icon {
+      width: 50px;
+      left: auto;
+      top: auto;
+      position: relative;
+      transform: none;
+      margin-bottom: 10px;
+    }
+  
+    .terminals_leaderboard__profiles {
+      padding: 10px;
+      grid-template-columns: 1fr;
+      row-gap: 10px;
+    }
+  
+    .terminals_leaderboard__profile {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+  
+    .terminals_leaderboard__picture {
+      width: 40px;
+      margin: 0 auto;
+    }
+  
+    .terminals_leaderboard__value {
+      font-size: 14px !important;
+    }
+  
+    table {
+      font-size: 12px;
+      overflow-x: auto;
+      display: block;
+    }
+  
+    #map {
+      height: 200px; /* Уменьшенная высота карты */
+      width: 100%;
+    }
+  }
+  @media screen and (max-width: 638px) {
+    .terminal_detail_leaderboard__table .table {
+      overflow: scroll !important;
+    }
+  }
+  /* Стили для экранов до 480px */
+  @media screen and (max-width: 480px) {
+    thead>tr>th {
+      font-size: 10px !important;
+    }
+    .terminals_leaderboard__title {
+      font-size: 20px;
+    }
+    .terminals_leaderboard__name {
+        font-size: 10px !important;
+    }
+    .terminals_leaderboard__value {
+      font-size: 12px !important;
+    }
+  
+    .terminals_leaderboard header .terminals_leaderboard__icon {
+      width: 40px;
+    }
+  
+    button {
+      font-size: 12px;
+      padding: 5px 10px;
+    }
+  }
+  

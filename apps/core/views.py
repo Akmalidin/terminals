@@ -1,7 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Region, Terminal, Incassation
 from django.utils import timezone
+from django.utils.timezone import now
 import requests
+from django.contrib import messages
 
 def index(request):
     regions = Region.objects.prefetch_related('terminals').all()
@@ -87,3 +89,22 @@ def collect_cash(request, terminal_id):
         incassation.save()
 
     return redirect('terminal_detail', pk=terminal_id)
+
+
+
+def region_list_view(request):
+    regions = Region.objects.all()
+
+    # Получаем текущую дату
+    current_date = now().date()
+
+    # Проверяем каждый терминал на необходимость инкассации
+    for region in regions:
+        for terminal in region.terminals.all():
+            last_incassation = terminal.incassations.last()
+            
+            # Если инкассация есть и она должна быть выполнена сегодня
+            if last_incassation and last_incassation.next_collection == current_date:
+                messages.info(request, f"Терминал {terminal.name} в регионе {region.name} требует инкассации сегодня.")
+
+    return render(request, 'index.html', {'regions': regions})

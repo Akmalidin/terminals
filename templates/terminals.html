@@ -48,18 +48,16 @@
                 {% endif %}
               </td>
               <td class="terminals_leaderboard__value align-middle">
-                <p class="d-flex align-items-center flex-column">
                   {% if terminal.next_collection %}
                   {{ terminal.next_collection|date:"d.m.Y" }}
                 {% else %}
                   Не назначено
                 {% endif %}
-                </p>
               </td>
               <td class="terminals_leaderboard__value align-middle">
-                <form method="post" action="{%  url 'collect_cash' terminal_id=terminal.id %}">
+                <form method="post" action="{%  url 'terminal_detail' pk=terminal.id %}">
                   {% csrf_token %}
-                  <button type="submit" class="btn btn-success" style="z-index: 100; !important">Собрать</button>
+                  <button type="submit" class="btn btn-success" style="z-index: 100; !important">Перейти</button>
                 </form>
               </td>
             </tr>
