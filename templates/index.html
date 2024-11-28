@@ -26,22 +26,45 @@
   </div>
 
   <!-- Панель с подробностями об инкассации -->
-  <div id="notification-details" class="notification-details">
-    <h2>Терминалы, требующие инкассации:</h2>
-    <ul>
-      {% for region in regions %}
-        {% with region_notifications|get_item:region.id as terminals_to_collect %}
-          {% if terminals_to_collect > 0 %}
-            <li>
-              <strong>{{ region.name }}:</strong> 
-              {{ terminals_to_collect }} терминалов
-            </li>
-          {% endif %}
-        {% endwith %}
-      {% endfor %}
-    </ul>
-    <button id="close-notifications" class="close-notifications">Закрыть</button>
-  </div>
+<div id="notification-details" class="notification-details">
+  <h2>Терминалы, требующие инкассации:</h2>
+  <ul>
+    {% for region in regions %}
+      {% with region_notifications|get_item:region.id as terminals_to_collect %}
+        {% if terminals_to_collect > 0 %}
+          <li>
+            <strong>{{ region.name }}:</strong> 
+            {{ terminals_to_collect }} терминалов
+          </li>
+          <hr>
+        {% endif %}
+      {% endwith %}
+    {% endfor %}
+  </ul>
+  <hr>
+  <!-- Добавляем терминалы с просроченной инкассацией -->
+  <h4 style="font-weight:700">Терминалы с просроченной инкассацией:</h4>
+  <ul>
+    {% for region in regions %}
+      {% with overdue_terminals|get_item:region.id as terminals %}
+        {% if terminals %}
+          <li>
+            <strong>{{ region.name }}:</strong>
+            <ul>
+              {% for terminal in terminals %}
+                <li>
+                  {{ terminal.name }} - {{ terminal.address }} (Следующая инкассация: {{ terminal.incassations.first.next_collection|date:"d.m.Y" }})
+                </li>
+              {% endfor %}
+            </ul>
+          </li>
+        {% endif %}
+      {% endwith %}
+    {% endfor %}
+  </ul>
+
+  <button id="close-notifications" class="close-notifications">Закрыть</button>
+</div>
 
   <article class="leaderboard">
     <header>
@@ -57,26 +80,41 @@
       {% with region_notifications|get_item:region.id as terminals_to_collect %}
       <article class="leaderboard__profile" title="Требуется инкассация: {{ terminals_to_collect }} терминалов.">
         <a href="{% url 'terminals' region.slug %}" style="text-decoration: none;">
-          <div class="leaderboard__picture-container">
-            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="{{ region.name }}" class="leaderboard__picture">
-            <span class="leaderboard__name">{{ region.name }}</span>
-            <span class="leaderboard__value">{{ region.terminals.count }} <span>терминалов</span></span>
-          </div>
+            <div class="leaderboard__picture-container">
+                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="{{ region.name }}" class="leaderboard__picture">
+                <span class="leaderboard__name">{{ region.name }}</span>
+                <span class="leaderboard__value">{{ region.terminals.count }} <span>терминалов</span></span>
+            </div>
         </a>
-      
+    
         {% if terminals_to_collect > 0 %}
-          <div class="region-notifications">
-            <span class="exclamation">Требуется инкассация: {{ terminals_to_collect }} терминалов.</span>
-            <span class="notification-details" style="display:none;">
-              Требуется инкассация: {{ terminals_to_collect }} терминалов.
-            </span>
-          </div>
+            <div class="region-notifications">
+                <span class="exclamation text-primary">Требуется инкассация: {{ terminals_to_collect }} терминалов.</span>
+                <span class="notification-details" style="display:none;">
+                    Требуется инкассация: {{ terminals_to_collect }} терминалов.
+                </span>
+            </div>
         {% else %}
-          <div class="region-notifications">
-            <span class="no-notifications">Нет инкассаций на сегодня</span>
-          </div>
+            <div class="region-notifications">
+                <span class="no-notifications">Нет инкассаций на сегодня</span>
+            </div>
         {% endif %}
-      </article>
+    
+        <!-- Добавляем блок для просроченных инкассаций -->
+        {% with overdue_terminals|get_item:region.id as overdue_terminals_list %}
+            {% if overdue_terminals_list %}
+                <div class="region-notifications overdue">
+                    <span class="exclamation">Просроченные инкассации: {{ overdue_terminals_list|length }}</span>
+                    <span class="notification-details">
+                        {% for terminal in overdue_terminals_list %}
+                            <span>{{ terminal.name }} - {{ terminal.address }} (Следующая инкассация: {{ terminal.incassations.first.next_collection|date:"d.m.Y" }})</span><br>
+                        {% endfor %}
+                    </span>
+                </div>
+            {% endif %}
+        {% endwith %}
+    </article>
+    
       
         {% endwith %}
       {% endfor %}

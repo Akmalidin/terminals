@@ -93,10 +93,15 @@
   .terminals_table_leaderboard__profile:hover .terminals_leaderboard__picture {
     box-shadow: none;
   }
-
-
-
-
+  .terminals_table_leaderboard__profile.pending > td {
+    background-color: lightyellow;
+  }
+  .terminals_table_leaderboard__profile.overdue > td {
+    background-color: red;
+  }
+  .terminals_table_leaderboard__profile.today-collection > td {
+    background-color: yellow; /* Подсветка жёлтым, если инкассация сегодня */
+  }
 
 
   .terminals_leaderboard__up, .terminals_leaderboard__down {

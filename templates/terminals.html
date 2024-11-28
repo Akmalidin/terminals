@@ -1,9 +1,14 @@
 {% extends 'include/base.html' %}
 {% load static %}
+{% load tz %}
 
 {% block content %}
 <body class="terminals_leaderboard_body">
+  <main class="container page_title navigation d-flex align-items-center justify-content-between w-100">
+    <a class="btn btn-outline-primary rounded mb-3" href="{% url 'index' %}"><i class="fa-solid fa-arrow-left"></i> Назад</a>
   <h1 class="terminal_detail__title">Список терминалов в {{ region.name }}</h1>
+  <div></div>
+  </main>
 
   <article class="terminals_leaderboard">
     <header>
@@ -13,6 +18,12 @@
         <span class="terminals_leaderboard__title--bottom">Район {{ region.name }}</span>
       </h1>
     </header>
+    
+    <!-- Добавляем поле для поиска -->
+    <div class="search-container py-3 px-3 input-group mb-3">
+      <input type="text" class="form-control form-control-lg" id="search-input" placeholder="Поиск по адресу или названию" aria-label="Example text with button addon" aria-describedby="button-addon1">
+    <button class="btn btn-primary" type="button" id="button-addon1">Поиск</button>
+  </div>
     
     <main class="terminals_leaderboard__profiles">
       <article class="terminals_detail_leaderboard__profile">
@@ -27,94 +38,110 @@
               <th>Действия</th>
             </tr>
           </thead>
-          <tbody>
-          {% for terminal in terminals %}
-            <tr class="terminals_table_leaderboard__profile">
-              <td class="align-middle">
-                <img src="{% if terminal.photo %}{{ terminal.photo.url }}{% else %}{% static 'img/question.jpg' %}{% endif %}" 
-                     alt="{{ terminal.name }}" class="terminals_leaderboard__picture">
-              </td>
-              <td class="terminals_leaderboard__name align-middle">
-                <a href="{% url 'terminal_detail' terminal.id %}" class="terminals_leaderboard__name">{{ terminal.name }}</a>
-              </td>
-              <td class="terminals_leaderboard__value align-middle">
-                {{ terminal.address }}
-              </td>
-              <td class="terminals_leaderboard__value align-middle">
-                {% if terminal.last_collected %}
-                  {{ terminal.last_collected|date:"d.m.Y" }}
-                {% else %}
-                  Неизвестно
-                {% endif %}
-              </td>
-              <td class="terminals_leaderboard__value align-middle">
-                  {% if terminal.next_collection %}
-                  {{ terminal.next_collection|date:"d.m.Y" }}
-                {% else %}
-                  Не назначено
-                {% endif %}
-              </td>
-              <td class="terminals_leaderboard__value align-middle">
-                <form method="post" action="{%  url 'terminal_detail' pk=terminal.id %}">
-                  {% csrf_token %}
-                  <button type="submit" class="btn btn-success" style="z-index: 100; !important">Перейти</button>
-                </form>
-              </td>
-            </tr>
-          {% endfor %}
+          <tbody id="terminal-list">
+            {% for terminal in terminals %}
+              {% if terminal.next_collection|date:"Y-m-d" == now|date:"Y-m-d" %}
+                  <tr class="terminals_table_leaderboard__profile today-collection">
+              {% elif terminal.next_collection|date:"Y-m-d" < now|date:"Y-m-d" %}
+                  <tr class="terminals_table_leaderboard__profile overdue">
+              {% else %}
+                  <tr class="terminals_table_leaderboard__profile">
+              {% endif %}
+
+                <td class="align-middle">
+                  <img src="{% if terminal.photo %}{{ terminal.photo.url }}{% else %}{% static 'img/question.jpg' %}{% endif %}" 
+                       alt="{{ terminal.name }}" class="terminals_leaderboard__picture">
+                </td>
+                <td class="terminals_leaderboard__name align-middle">
+                  <a href="{% url 'terminal_detail' terminal.id %}" class="terminals_leaderboard__name">{{ terminal.name }}</a>
+                </td>
+                <td class="terminals_leaderboard__value align-middle">
+                  {{ terminal.address }}
+                </td>
+                <td class="terminals_leaderboard__value align-middle">
+                  {% if terminal.last_collected %}
+                    {{ terminal.last_collected|date:"d.m.Y" }}
+                  {% else %}
+                    Неизвестно
+                  {% endif %}
+                </td>
+                <td class="terminals_leaderboard__value align-middle">
+                    {% if terminal.next_collection %}
+                    {{ terminal.next_collection|date:"d.m.Y" }}
+                  {% else %}
+                    Не назначено
+                  {% endif %}
+                </td>
+                <td class="terminals_leaderboard__value align-middle">
+                  <form method="post" action="{%  url 'terminal_detail' pk=terminal.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success" style="z-index: 100; !important">Перейти</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
           </tbody>
         </table>
       </article>
     </main>
   </article> <br><br>
   <div id="map" style="height: 300px; width: 80%;"></div>
+
   <script>
+    // Инициализация карты Google
     function initMap() {
         var lat = "{{ coordinates.0|floatformat:6|default:"0" }}";
         var lng = "{{ coordinates.1|floatformat:6|default:"0" }}";
-
+        
         var center = {
             lat: parseFloat(lat),
             lng: parseFloat(lng)
         };
-
+        
         var map = new google.maps.Map(document.getElementById('map'), {
             zoom: 10,
             center: center
         });
 
-        // Создаем массив адресов для геокодирования
-        var addresses = [
-            {% for terminal in terminals %}
-                "{{ terminal.address|escapejs }}"{% if not forloop.last %},{% endif %}
-            {% endfor %}
-        ];
-
         var geocoder = new google.maps.Geocoder();
 
-        addresses.forEach(function(address, index) {
-            var fullAddress = address + ', {{ region.name }}, Кыргызстан';
-            geocoder.geocode({'address': fullAddress}, function(results, status) {
-                if (status === 'OK') {
-                    var position = results[0].geometry.location;
-
-                    var marker = new google.maps.Marker({
-                        position: position,
-                        map: map,
-                        animation: google.maps.Animation.DROP,
-                        label: {
-                            text: (index + 1).toString(),
-                            color: 'white',
-                            fontSize: '16px',
-                            fontWeight: 'bold'
-                        }
-                    });
-                } else {
-                    console.error('Geocode was not successful for the following reason: ' + status);
-                }
-            });
-        });
+        {% for terminal in terminals %}
+          var address = "{{ terminal.address|escapejs }}";
+          var fullAddress = address + ', {{ region.name }}, Кыргызстан';
+          geocoder.geocode({'address': fullAddress}, function(results, status) {
+            if (status === 'OK') {
+                var position = results[0].geometry.location;
+                new google.maps.Marker({
+                    position: position,
+                    map: map,
+                    animation: google.maps.Animation.DROP
+                });
+            } else {
+                console.error('Geocode was not successful for the following reason: ' + status);
+            }
+          });
+        {% endfor %}
     }
+
+    // Добавление функции поиска
+    document.getElementById('search-input').addEventListener('input', function() {
+        var searchQuery = this.value.toLowerCase();
+        
+        // Получаем все строки терминалов
+        var rows = document.querySelectorAll('#terminal-list tr');
+        
+        rows.forEach(function(row) {
+            var terminalName = row.querySelector('.terminals_leaderboard__name').textContent.toLowerCase();
+            var terminalAddress = row.querySelector('.terminals_leaderboard__value').textContent.toLowerCase();
+            
+            // Показываем строку, если имя или адрес содержат введенный текст
+            if (terminalName.includes(searchQuery) || terminalAddress.includes(searchQuery)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
   </script>
 </body>
 {% endblock %}

@@ -2,7 +2,11 @@
 {% load static %}
 {% block content %}
 <body class="terminals_leaderboard_body terminal_detail_leaderboard_body">
-  <h1 class="terminal_detail__title">Терминал в регионе {{ terminal.region.name }}</h1>
+  <main class="container page_title navigation d-flex align-items-center justify-content-between w-100 mt-4">
+    <a class="btn btn-outline-primary rounded mb-3" href="{% url 'terminals' terminal.region.slug %}"><i class="fa-solid fa-arrow-left"></i> Назад</a>
+  <h1 class="terminal_detail__title">Список терминалов в {{ terminal.region.name }}</h1>
+  <div></div>
+  </main>
   <section class="terminal_detail">
     <article class="terminals_leaderboard terminals_detail_leaderboard">
       <header>
@@ -51,7 +55,7 @@
                   <form method="post" action="{% url 'collect_cash' terminal.id %}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-success">Собрать</button>
-                  </form>
+                </form>
                 </td>
               </tr>
             </tbody>
